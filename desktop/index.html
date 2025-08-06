@@ -1,0 +1,897 @@
+<!-- <!DOCTYPE html><html><head><title>Job Assistant</title></head><body><h1>Job Assistant UI</h1></body></html>
+
+<!DOCTYPE html>
+<html>
+<head><title>Job Assistant</title></head>
+<body>
+  <h1>AI Job Assistant</h1>
+  <textarea id="jobDesc" placeholder="Paste job description here" rows="6" cols="60"></textarea><br><br>
+  <textarea id="profile" placeholder="Paste candidate profile here" rows="4" cols="60"></textarea><br><br>
+  <button id="btnSend">Generate Email</button>
+  <h2>Generated Email:</h2>
+  <pre id="output"></pre>
+  <input id="jobUrl" type="text" placeholder="Paste LinkedIn job URL here" style="width: 600px;"><br><br>
+<button onclick="fetchJob()">Auto-Fill Job Description</button>
+
+<script>
+  async function fetchJob() {
+    const url = document.getElementById('jobUrl').value;
+    const res = await fetch('http://localhost:5000/scrape-job', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobUrl: url })
+    });
+    const data = await res.json();
+    document.getElementById('jobDesc').value = `${data.title} at ${data.company}, ${data.location}\n\n${data.description}`;
+  }
+</script>
+
+<script>
+  window.electronAPI.onEmailGenerated((output) => {
+    document.getElementById('output').textContent = output;
+  });
+</script>
+
+  <script>
+    document.getElementById('btnSend').addEventListener('click', async () => {
+      const jobDesc = document.getElementById('jobDesc').value;
+      const profile = document.getElementById('profile').value;
+      const result = await window.electronAPI.sendEmailRequest(jobDesc, profile);
+      document.getElementById('output').textContent = result.email || result.error || 'No response';
+    });
+  </script>
+</body>
+</html> -->
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI Job Assistant</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    #overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 800px;
+  height: 500px;
+  padding: 20px;
+  background: rgba(10, 10, 10, 0.7);
+  color: #ffffff;
+  font-weight: bold;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+  display: none;
+  font-size: 14px;
+  line-height: 1.4;
+  z-index: 999999;
+  user-select: text;
+  pointer-events: none;
+  overflow: auto; /* 👈 Enable both horizontal and vertical scroll */
+  white-space: pre; /* 👈 Prevent word wrap */
+}
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.4);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <h3>📧 Generated Email:</h3>
+    <pre id="output" style="white-space: pre-wrap;"></pre>
+  </div>
+
+  <script>
+    let overlay = document.getElementById('overlay');
+    let output = document.getElementById('output');
+
+    window.electronAPI.onEmailGenerated((email) => {
+      output.textContent = email;
+      overlay.style.display = 'block';
+    });
+    
+    // Scroll with Ctrl + Up/Down
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+        const delta = e.key === 'ArrowUp' ? -30 : 30;
+        overlay.scrollTop += delta;
+      }
+    });
+  </script>
+  <script>
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      const overlay = document.getElementById('overlay');
+      if (overlay.style.display === 'block') {
+        const scrollAmount = 50; // scroll step
+        if (e.key === 'ArrowDown') overlay.scrollTop += scrollAmount;
+        if (e.key === 'ArrowUp') overlay.scrollTop -= scrollAmount;
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('keydown', (e) => {
+    const overlay = document.getElementById('overlay');
+    const output = document.getElementById('output');
+
+    if (overlay.style.display !== 'block') return;
+
+    const scrollAmount = 50;
+
+    if (e.ctrlKey) {
+      switch (e.key) {
+        case 'ArrowDown':
+          overlay.scrollTop += scrollAmount;
+          break;
+        case 'ArrowUp':
+          overlay.scrollTop -= scrollAmount;
+          break;
+        case 'ArrowRight':
+          overlay.scrollLeft += scrollAmount;
+          break;
+        case 'ArrowLeft':
+          overlay.scrollLeft -= scrollAmount;
+          break;
+        case 'q':
+        case 'Q':
+          navigator.clipboard.writeText(output.textContent)
+            .then(() => console.log('📋 Copied to clipboard!'))
+            .catch(err => console.error('❌ Copy failed:', err));
+          break;
+      }
+    }
+  });
+</script>
+
+
+</body>
+</html> -->
+
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI Job Assistant</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 800px;
+      height: 500px;
+      padding: 20px;
+      background: rgba(10, 10, 10, 0.7);
+      color: #ffffff;
+      font-weight: bold;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+      display: none;
+      font-size: 15px;
+      line-height: 1.5;
+      z-index: 999999;
+      user-select: text;
+      pointer-events: none;
+      overflow: auto;
+      white-space: pre;
+      scroll-behavior: smooth;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.4);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <h3>📧 Generated Email:</h3>
+    <pre id="output" style="white-space: pre-wrap;"></pre>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const output = document.getElementById('output');
+
+    // Show overlay with email content
+    window.electronAPI.onEmailGenerated((email) => {
+      output.textContent = email;
+      overlay.style.display = 'block';
+    });
+
+    // Alt + Arrows → Scroll / Alt + Q → Copy
+    window.addEventListener('keydown', (e) => {
+      if (overlay.style.display !== 'block') return;
+
+      const scrollAmount = 50;
+
+      if (e.altKey) {
+        switch (e.key) {
+          case 'ArrowDown':
+            overlay.scrollTop += scrollAmount;
+            break;
+          case 'ArrowUp':
+            overlay.scrollTop -= scrollAmount;
+            break;
+          case 'ArrowRight':
+            overlay.scrollLeft += scrollAmount;
+            break;
+          case 'ArrowLeft':
+            overlay.scrollLeft -= scrollAmount;
+            break;
+          case 'q':
+          case 'Q':
+            navigator.clipboard.writeText(output.textContent)
+              .then(() => console.log('📋 Copied to clipboard!'))
+              .catch(err => console.error('❌ Copy failed:', err));
+            break;
+        }
+      }
+    });
+  </script>
+</body>
+</html> -->
+
+
+
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI Job Assistant</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 800px;
+      height: 500px;
+      padding: 20px;
+      background: rgba(10, 10, 10, 0.7);
+      color: #ffffff;
+      font-family: monospace;
+      font-weight: bold;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+      display: none;
+      font-size: 14px;
+      line-height: 1.4;
+      z-index: 999999;
+      user-select: text;
+      pointer-events: none;
+      overflow: auto;
+      white-space: pre; /* preserves formatting and enables horizontal scroll */
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.4);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <h3>📧 Generated Email:</h3>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const output = document.getElementById('output');
+
+    window.electronAPI.onEmailGenerated((email) => {
+      output.textContent = email;
+      overlay.style.display = 'block';
+    });
+
+    // CapsLock-based scroll + copy
+    window.addEventListener('keydown', (e) => {
+      if (!overlay || overlay.style.display !== 'block') return;
+      if (!e.getModifierState('CapsLock')) return;
+
+      const scrollAmount = 50;
+      switch (e.key) {
+        case 'ArrowDown':
+          overlay.scrollTop += scrollAmount;
+          break;
+        case 'ArrowUp':
+          overlay.scrollTop -= scrollAmount;
+          break;
+        case 'ArrowRight':
+          overlay.scrollLeft += scrollAmount;
+          break;
+        case 'ArrowLeft':
+          overlay.scrollLeft -= scrollAmount;
+          break;
+        case 'q':
+        case 'Q':
+          navigator.clipboard.writeText(output.textContent)
+            .then(() => console.log('📋 Copied to clipboard!'))
+            .catch(err => console.error('❌ Copy failed:', err));
+          break;
+      }
+    });
+  </script>
+</body>
+</html> -->
+
+
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI Job Assistant</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      max-width: 90vw;
+      max-height: 80vh;
+      padding: 20px;
+      background: rgba(10, 10, 10, 0.7);
+      color: #ffffff;
+      font-family: monospace;
+      font-weight: bold;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+      display: none;
+      font-size: 14px;
+      line-height: 1.4;
+      z-index: 999999;
+      user-select: text;
+      pointer-events: none;
+      overflow: auto;
+      white-space: pre;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.4);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <h3>📧 Generated Email:</h3>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const output = document.getElementById('output');
+
+    window.electronAPI.onEmailGenerated((email) => {
+      output.textContent = email;
+      overlay.style.display = 'block';
+    });
+
+    // Ctrl + Shift based actions
+    window.addEventListener('keydown', (e) => {
+      if (!overlay || overlay.style.display !== 'block') return;
+      if (!(e.ctrlKey && e.shiftKey)) return;
+
+      const scrollAmount = 50;
+      switch (e.key) {
+        case 'ArrowDown':
+          overlay.scrollTop += scrollAmount;
+          break;
+        case 'ArrowUp':
+          overlay.scrollTop -= scrollAmount;
+          break;
+        case 'ArrowRight':
+          overlay.scrollLeft += scrollAmount;
+          break;
+        case 'ArrowLeft':
+          overlay.scrollLeft -= scrollAmount;
+          break;
+        case 'q':
+        case 'Q':
+          navigator.clipboard.writeText(output.textContent)
+            .then(() => console.log('📋 Copied to clipboard!'))
+            .catch(err => console.error('❌ Copy failed:', err));
+          break;
+      }
+    });
+  </script>
+</body>
+</html> -->
+
+
+<!-- 
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI Job Assistant</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 800px;
+      height: 500px;
+      padding: 20px;
+      background: rgba(10, 10, 10, 0.7);
+      color: #ffffff;
+      font-weight: bold;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+      display: none;
+      font-size: 14px;
+      line-height: 1.4;
+      z-index: 999999;
+      user-select: text;
+      overflow: auto;
+      white-space: pre;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.4);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <h3>📧 Generated Email:</h3>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const output = document.getElementById('output');
+
+    window.electronAPI.onEmailGenerated((email) => {
+      overlay.style.display = 'block';
+      output.textContent = email;
+    });
+
+    // Scroll and copy using Ctrl+Shift
+    window.addEventListener('keydown', (e) => {
+      if (!(e.ctrlKey && e.shiftKey)) return;
+
+      const scrollAmount = 40;
+      if (overlay.style.display !== 'block') return;
+
+      switch (e.key) {
+        case 'ArrowUp':
+          overlay.scrollTop -= scrollAmount;
+          break;
+        case 'ArrowDown':
+          overlay.scrollTop += scrollAmount;
+          break;
+        case 'ArrowRight':
+          overlay.scrollLeft += scrollAmount;
+          break;
+        case 'ArrowLeft':
+          overlay.scrollLeft -= scrollAmount;
+          break;
+        case 'Q':
+        case 'q':
+          navigator.clipboard.writeText(output.textContent)
+            .then(() => console.log('✅ Copied email!'))
+            .catch(err => console.error('❌ Failed to copy:', err));
+          break;
+      }
+    });
+  </script>
+</body>
+</html> -->
+
+
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title></title> 
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 800px;
+      height: 500px;
+      padding: 20px;
+      background: rgba(10, 10, 10, 0.7);
+      color: #ffffff;
+      font-weight: 500;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+      display: none;
+      font-size: 14px;
+      line-height: 1.4;
+      z-index: 999999;
+      user-select: text;
+      pointer-events: none;
+      overflow-y: auto;
+      overflow-x: hidden;
+      white-space: pre-wrap;
+      max-height: 100vh;
+      max-width: 100vw;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.4);
+      border-radius: 3px;
+    }
+
+    #label {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <div id="label">📧 Generated Email:</div>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const output = document.getElementById('output');
+
+    window.electronAPI.onEmailGenerated((email) => {
+      output.textContent = email;
+      overlay.style.display = 'block';
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (overlay.style.display !== 'block') return;
+
+      const scrollAmount = 50;
+      if (e.ctrlKey && e.shiftKey) {
+        switch (e.key) {
+          case 'ArrowUp':
+            overlay.scrollTop -= scrollAmount;
+            break;
+          case 'ArrowDown':
+            overlay.scrollTop += scrollAmount;
+            break;
+          case 'ArrowLeft':
+            window.moveBy(-50, 0);
+            break;
+          case 'ArrowRight':
+            window.moveBy(50, 0);
+            break;
+          case 'C':
+          case 'c':
+            navigator.clipboard.writeText(output.textContent)
+              .then(() => console.log('📋 Email copied to clipboard'))
+              .catch(err => console.error('❌ Copy failed:', err));
+            break;
+        }
+      }
+    });
+  </script>
+</body>
+</html> -->
+
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      font-family: monospace;
+      font-size: 14px;
+      overflow: hidden;
+    }
+
+    #content {
+      box-sizing: border-box;
+      padding: 16px;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    #status {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <div id="status">Generated Email:</div>
+    <div id="output">Press Ctrl+M to begin...</div>
+  </div>
+
+  <script>
+    const { ipcRenderer, clipboard } = require('electron');
+
+    const output = document.getElementById('output');
+    const status = document.getElementById('status');
+    const content = document.getElementById('content');
+
+    let lastGeneratedEmail = '';
+
+    ipcRenderer.on('email-generated', (event, message) => {
+      if (message.startsWith('[ERROR]')) {
+        status.textContent = '❌ Error:';
+      } else if (message.startsWith('⏳')) {
+        status.textContent = 'Processing...';
+      } else {
+        status.textContent = 'Generated Email:';
+        lastGeneratedEmail = extractEmail(message); // Save only email content
+      }
+      output.textContent = message;
+    });
+
+    function extractEmail(fullText) {
+      const splitIndex = fullText.indexOf('**Cold Email for Kevin Patel');
+      return splitIndex !== -1 ? fullText.substring(splitIndex) : fullText;
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'q') {
+        clipboard.writeText(lastGeneratedEmail);
+        status.textContent = '📋 Copied!';
+      }
+
+      if (e.key === 'ArrowDown') content.scrollBy(0, 40);
+      if (e.key === 'ArrowUp') content.scrollBy(0, -40);
+    });
+  </script>
+</body>
+</html> -->
+
+
+<!-- index.html -->
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      font-family: monospace;
+      font-size: 14px;
+      overflow-x: hidden;
+    }
+    #container {
+      padding: 12px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .header {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">Generated Email:\n\nPress Ctrl+M to begin...</div>
+  <script>
+    const { ipcRenderer, clipboard } = require('electron');
+
+    const container = document.getElementById('container');
+    let fullText = '';
+
+    ipcRenderer.on('email-generated', (_, text) => {
+      fullText = text;
+      container.innerText = 'Generated Email:\n\n' + fullText;
+    });
+
+    ipcRenderer.on('scroll-up', () => {
+      container.scrollTop -= 40;
+    });
+
+    ipcRenderer.on('scroll-down', () => {
+      container.scrollTop += 40;
+    });
+
+    ipcRenderer.on('trigger-copy', () => {
+      const emailStart = fullText.indexOf('Dear') !== -1 ? fullText.indexOf('Dear') : 0;
+      const emailBody = fullText.slice(emailStart).trim();
+      clipboard.writeText(emailBody);
+    });
+  </script>
+</body>
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Generated Email</title>
+  <!-- <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: rgba(62, 61, 61, 0.4);
+      color: white;
+      font-family: monospace;
+      font-size: 16px;
+      overflow: hidden;
+    }
+
+    #email-content {
+  padding: 20px;
+  width: 90%;
+  height: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #555;
+    }
+
+    ::selection {
+      background: #00bcd4;
+      color: black;
+    }
+  </style> -->
+  <style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    font-family: monospace;
+    font-size: 16px;
+    overflow: hidden;
+  }
+
+  #email-content {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    overflow-y: auto;
+    overflow-x: auto;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #555;
+  }
+
+  ::selection {
+    background: #00bcd4;
+    color: black;
+  }
+</style>
+
+</head>
+<body>
+  <div id="email-content">Generated Email:\n\nPress Ctrl+M to begin...</div>
+  <script src="renderer.js"></script>
+</body>
+<script src="renderer.js"></script>
+
+
+</html>
